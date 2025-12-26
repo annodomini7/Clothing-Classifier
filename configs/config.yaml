@@ -1,0 +1,17 @@
+defaults:
+  - model: resnet50
+  - training: default
+  - data: default
+  - optimizer: adamw
+  - _self_
+
+mlflow:
+  tracking_uri: "http://127.0.0.1:8080"
+  experiment_name: "clothing-classifier"
+
+checkpoint:
+  dirpath: "./checkpoints"
+
+export:
+  onnx_path: "triton/export/onnx/model.onnx"
+  fp16: True
