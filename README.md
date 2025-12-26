@@ -100,21 +100,26 @@ uv run python clothing_classifier/train.py
 ## Infer
 
 Можно запустить инференс на файле из датасета (или любом другом скачанном файле)
-на модели в формате onnx: `uv run python infer.py --image <путь к изображению>`
+на модели в формате onnx:
+`uv run python clothing_classifier/infer.py --image <путь к изображению>`
 
 Можно запустить инференс с помощью `triton`. Сначала надо запустить сервер:
 
 ```bash
 cd triton
-docker run --rm -p 8900:8000 -p 8901:8001 -p 8902:8002 \
-    -v $(pwd)/model_repository:/models \
-    --shm-size=1g \
-    nvcr.io/nvidia/tritonserver:24.07-py3 \
-    tritonserver --model-repository=/models --strict-model-config=false
+
+docker-compose up -d
 ```
 
-Потом можно поинференсить файл:
+Потом можно поинференсить файл (из корня проекта):
 
 ```bash
-uv run python infer_triton.py --image <путь к изображению>
+uv run python clothing_classifier/infer_triton.py --image <путь к изображению>
+```
+
+И потом надо докер остановить:
+
+```bash
+cd trinton
+docker-compose down
 ```

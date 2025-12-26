@@ -1,4 +1,3 @@
-import io
 import json
 from pathlib import Path
 
@@ -18,11 +17,22 @@ def softmax(x: np.ndarray) -> np.ndarray:
     return exp_x / exp_x.sum()
 
 
+def preprocess_image(image_path: str, image_size: int = 224) -> np.ndarray:
+    mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
+    std = np.array([0.229, 0.224, 0.225], dtype=np.float32)
+    image = Image.open(image_path).convert("RGB")
+    image = image.resize((image_size, image_size))
+    image = np.array(image, dtype=np.float32) / 255.0
+    image = (image - mean) / std
+    image = image.transpose(2, 0, 1)
+    return image.astype(np.float32)
+
+
 def main(
     image: str,
     url: str = "localhost:8900",
-    model_name: str = "ensemble_onnx",
-    labels_path: str = "../checkpoints/class_to_name.json",
+    model_name: str = "onnx",
+    labels_path: str = "checkpoints/class_to_name.json",
     top_k: int = 5,
 ) -> None:
     client = httpclient.InferenceServerClient(url=url)
@@ -31,24 +41,27 @@ def main(
         print(f"Error: Triton server at {url} is not available")
         return
 
+    # Check available models
+    models = client.get_model_repository_index()
+    print(f"Available models: {[m['name'] for m in models]}")
+
     labels = {}
     if Path(labels_path).exists():
         labels = load_labels(labels_path)
 
-    pil_image = Image.open(image).convert("RGB")
-    buffer = io.BytesIO()
-    pil_image.save(buffer, format="JPEG")
-    image_bytes = buffer.getvalue()
-    image_input = np.frombuffer(image_bytes, dtype=np.uint8)
-    batched_input = image_input.reshape(1, -1)
+    # Preprocess image
+    input_data = preprocess_image(image)
+    input_data = np.expand_dims(input_data, axis=0)
 
-    inputs = [httpclient.InferInput("raw_image", batched_input.shape, "UINT8")]
-    inputs[0].set_data_from_numpy(batched_input)
+    # Prepare request for onnx model
+    inputs = [httpclient.InferInput("input", input_data.shape, "FP32")]
+    inputs[0].set_data_from_numpy(input_data)
 
-    outputs = [httpclient.InferRequestedOutput("predictions")]
+    outputs = [httpclient.InferRequestedOutput("output")]
 
+    # Run inference
     response = client.infer(model_name=model_name, inputs=inputs, outputs=outputs)
-    logits = response.as_numpy("predictions")[0]
+    logits = response.as_numpy("output")[0]
 
     probs = softmax(logits)
     top_indices = np.argsort(probs)[::-1][:top_k]
