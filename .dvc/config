@@ -1,4 +1,4 @@
 [core]
     remote = localstore
 ['remote "localstore"']
-    url = /data
+    url = /Users/koganna7/Documents/dvc-storage
