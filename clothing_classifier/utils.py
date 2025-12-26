@@ -25,7 +25,7 @@ def download_data(data_dir: str) -> None:
 
     try:
         repo = Repo(".")
-        repo.pull()
+        repo.pull(force=True)
         print(f"Data successfully pulled from DVC to {data_dir}")
         return
     except Exception as e:

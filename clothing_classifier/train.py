@@ -97,6 +97,7 @@ def main(cfg: DictConfig) -> None:
         output_path=onnx_path,
     )
 
+    os.makedirs(checkpoint_dir, exist_ok=True)
     weights_path = os.path.join(checkpoint_dir, "best_model_weights.pth")
     torch.save(best_model.state_dict(), weights_path)
 

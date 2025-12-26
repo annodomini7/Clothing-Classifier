@@ -10,7 +10,7 @@ mlflow:
   experiment_name: "clothing-classifier"
 
 checkpoint:
-  dirpath: "./checkpoints"
+  dirpath: "checkpoints"
 
 export:
   onnx_path: "triton/export/onnx/model.onnx"
