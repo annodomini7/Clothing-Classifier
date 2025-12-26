@@ -41,25 +41,18 @@ def main(
         print(f"Error: Triton server at {url} is not available")
         return
 
-    # Check available models
-    models = client.get_model_repository_index()
-    print(f"Available models: {[m['name'] for m in models]}")
-
     labels = {}
     if Path(labels_path).exists():
         labels = load_labels(labels_path)
 
-    # Preprocess image
     input_data = preprocess_image(image)
     input_data = np.expand_dims(input_data, axis=0)
 
-    # Prepare request for onnx model
     inputs = [httpclient.InferInput("input", input_data.shape, "FP32")]
     inputs[0].set_data_from_numpy(input_data)
 
     outputs = [httpclient.InferRequestedOutput("output")]
 
-    # Run inference
     response = client.infer(model_name=model_name, inputs=inputs, outputs=outputs)
     logits = response.as_numpy("output")[0]
 
