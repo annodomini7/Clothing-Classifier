@@ -104,15 +104,17 @@ uv run python clothing_classifier/train.py
 
 Можно запустить инференс с помощью `triton`. Сначала надо запустить сервер:
 
-````bash
+```bash
 cd triton
 docker run --rm -p 8900:8000 -p 8901:8001 -p 8902:8002 \
     -v $(pwd)/model_repository:/models \
     --shm-size=1g \
     nvcr.io/nvidia/tritonserver:24.07-py3 \
-    tritonserver --model-repository=/models --strict-model-config=false```
+    tritonserver --model-repository=/models --strict-model-config=false
+```
 
 Потом можно поинференсить файл:
+
 ```bash
 uv run python infer_triton.py --image <путь к изображению>
-````
+```
